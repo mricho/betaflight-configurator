@@ -3134,6 +3134,7 @@ TABS.osd.initialize = function(callback) {
 
         $('a.save').click(function() {
             MSP.promise(MSPCodes.MSP_EEPROM_WRITE);
+
             GUI.log(i18n.getMessage('osdSettingsSaved'));
             const oldText = $(this).html();
             $(this).html(i18n.getMessage('osdButtonSaved'));

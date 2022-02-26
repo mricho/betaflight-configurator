@@ -246,7 +246,16 @@ function onOpen(openInfo) {
         mspHelper = new MspHelper();
         MSP.listen(mspHelper.process_data.bind(mspHelper));
         console.log(`Requesting configuration data`);
+        // here
+        //GUI.timeout_add('enter_cli', function enter_cli() {
+            // Enter CLI mode
+            const bufferOut = new ArrayBuffer(1);
+            const bufView = new Uint8Array(bufferOut);
 
+            bufView[0] = 0x23; // #
+
+            serial.send(bufferOut);
+        //}, 250);
         MSP.send_message(MSPCodes.MSP_API_VERSION, false, false, function () {
             analytics.setFlightControllerData(analytics.DATA.API_VERSION, FC.CONFIG.apiVersion);
 
@@ -589,10 +598,13 @@ function onClosed(result) {
 
 function read_serial(info) {
     if (CONFIGURATOR.cliActive) {
+        console.log('READ_SERIAL: CONFIGURATOR.cliActive');
         TABS.cli.read(info);
     } else if (CONFIGURATOR.cliEngineActive) {
+        console.log('READ_SERIAL: CONFIGURATOR.cliEngineActive');
         TABS.presets.read(info);
     } else {
+        // console.log('READ_SERIAL: else (MSP)');
         MSP.read(info);
     }
 }
@@ -687,7 +699,7 @@ function have_sensor(sensors_detected, sensor_code) {
 
 function startLiveDataRefreshTimer() {
     // live data refresh
-    GUI.timeout_add('data_refresh', function () { update_live_status(); }, 100);
+    //GUI.timeout_add('data_refresh', function () { update_live_status(); }, 100);
 }
 
 function update_live_status() {

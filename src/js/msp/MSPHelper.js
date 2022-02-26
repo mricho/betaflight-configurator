@@ -140,6 +140,7 @@ MspHelper.prototype.process_data = function(dataHandler) {
     if (!crcError) {
         if (!dataHandler.unsupported) switch (code) {
             case MSPCodes.MSP_STATUS:
+                console.log('MSP RX MSP_STATUS(101)');
                 FC.CONFIG.cycleTime = data.readU16();
                 FC.CONFIG.i2cError = data.readU16();
                 FC.CONFIG.activeSensors = data.readU16();
@@ -151,6 +152,7 @@ MspHelper.prototype.process_data = function(dataHandler) {
                 sensor_status(FC.CONFIG.activeSensors);
                 break;
             case MSPCodes.MSP_STATUS_EX:
+                console.log('MSP RX MSP_STATUS_EX(150)');
                 FC.CONFIG.cycleTime = data.readU16();
                 FC.CONFIG.i2cError = data.readU16();
                 FC.CONFIG.activeSensors = data.readU16();
@@ -269,6 +271,7 @@ MspHelper.prototype.process_data = function(dataHandler) {
                 FC.SENSOR_DATA.sonar = data.read32();
                 break;
             case MSPCodes.MSP_ANALOG:
+                console.log('MSP RX MSP_ANALOG(110)');
                 FC.ANALOG.voltage = data.readU8() / 10.0;
                 FC.ANALOG.mAhdrawn = data.readU16();
                 FC.ANALOG.rssi = data.readU16(); // 0-1023
@@ -545,6 +548,7 @@ MspHelper.prototype.process_data = function(dataHandler) {
                 }
                 break;
             case MSPCodes.MSP_BOXNAMES:
+                console.log('MSP RX MSP_BOXNAMES(116)');
                 FC.AUX_CONFIG = []; // empty the array as new data is coming in
 
                 buff = [];

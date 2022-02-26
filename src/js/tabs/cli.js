@@ -309,13 +309,14 @@ TABS.cli.initialize = function (callback) {
         // give input element user focus
         textarea.focus();
 
+        // enters cli with #
         GUI.timeout_add('enter_cli', function enter_cli() {
             // Enter CLI mode
             const bufferOut = new ArrayBuffer(1);
             const bufView = new Uint8Array(bufferOut);
 
             bufView[0] = 0x23; // #
-
+            console.log('CLI Sending #');
             serial.send(bufferOut);
         }, 250);
 
@@ -399,7 +400,11 @@ TABS.cli.read = function (readInfo) {
     const data = new Uint8Array(readInfo.data);
     let validateText = "";
     let sequenceCharsToSkip = 0;
-
+    let text = "";
+    for (let i = 0; i < data.length; i++) {
+        text += String.fromCharCode(data[i]);
+    }
+    console.log('CLI RECEIVE: ', text);
     for (let i = 0; i < data.length; i++) {
         const currentChar = String.fromCharCode(data[i]);
         const isCRLF = currentChar.charCodeAt() === lineFeedCode || currentChar.charCodeAt() === carriageReturnCode;
@@ -498,11 +503,11 @@ TABS.cli.sendNativeAutoComplete = function (line, callback) {
 TABS.cli.send = function (line, callback) {
     const bufferOut = new ArrayBuffer(line.length);
     const bufView = new Uint8Array(bufferOut);
-
+    let text = "";
     for (let cKey = 0; cKey < line.length; cKey++) {
         bufView[cKey] = line.charCodeAt(cKey);
     }
-
+    console.log('CLI serial sending', line);
     serial.send(bufferOut, callback);
 };
 
