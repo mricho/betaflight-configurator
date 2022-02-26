@@ -40,7 +40,44 @@ TABS.pid_tuning.initialize = function (callback) {
         GUI.active_tab = 'pid_tuning';
         self.activeSubtab = 'pid';
     }
+    function sendLine(line, callback) {
+        console.log('hit sendLine', line);
+        send(`${line}\n`, callback);
+    };
+    function send(line, callback) {
+        console.log('hit send', line);
+        const bufferOut = new ArrayBuffer(line.length);
+        const bufView = new Uint8Array(bufferOut);
 
+        for (let cKey = 0; cKey < line.length; cKey++) {
+            bufView[cKey] = line.charCodeAt(cKey);
+        }
+        console.log('Config test serial sending', bufferOut);
+        serial.send(bufferOut, callback);
+    };
+
+    function executeCommands(outString) {
+        const outputArray = outString.split("\n");
+        Promise.reduce(outputArray, function(delay, line, index) {
+            return new Promise(function (resolve) {
+                GUI.timeout_add('CLI_send_slowly', function () {
+                    let processingDelay = 15;
+                    line = line.trim();
+                    if (line.toLowerCase().startsWith('profile')) {
+                        processingDelay = self.profileSwitchDelayMs;
+                    }
+                    const isLastCommand = outputArray.length === index + 1;
+                    if (isLastCommand && self.cliBuffer) {
+                        //self.cliBuffer not used
+                        // line = getCliCommand(line, self.cliBuffer);
+                    }
+                    sendLine(line, function () {
+                        resolve(processingDelay);
+                    });
+                }, delay);
+            });
+        }, 0);
+    }
     // Update filtering and pid defaults based on API version
     const FILTER_DEFAULT = FC.getFilterDefaults();
     const PID_DEFAULT = FC.getPidDefaults();
@@ -2487,6 +2524,29 @@ TABS.pid_tuning.initialize = function (callback) {
             });
         }
 
+        // CLI PID TAB COMMANDS
+        $('a.test_cli_open').on('click', function() {
+            console.log('test cli open');
+            CONFIGURATOR.cliActive = true;
+            executeCommands('#');
+        });
+        $('a.test_cli').on('click', function() {
+            console.log('test cli command pressed');
+            let p_roll = $('.pid_tuning .ROLL input[name="p"]').val();
+            console.log("SETTING P ROLL TO: ", $('.pid_tuning .ROLL input[name="p"]').val());
+            executeCommands(`#\nset p_roll = ${p_roll}`);
+        });
+        $('a.test_cli_save').on('click', function() {
+            console.log('test cli save pressed');
+            executeCommands('save_no_reboot');
+            CONFIGURATOR.cliActive = false; // return to MSP mode
+        });
+        $('a.test_cli_exit').on('click', function() {
+            console.log('test cli exit pressed');
+            executeCommands('exit_no_reboot');
+            CONFIGURATOR.cliActive = false; // return to MSP mode
+        });
+
         // update == save.
         $('a.update').click(function () {
             form_to_pid_and_rc();
@@ -2495,6 +2555,9 @@ TABS.pid_tuning.initialize = function (callback) {
             Promise.resolve(true)
             .then(function () {
                 let promise;
+                console.log('---- about to save ----');
+                console.log('semver.gte(FC.CONFIG.apiVersion, CONFIGURATOR.API_VERSION_MIN_SUPPORTED_PID_CONTROLLER_CHANGE', semver.gte(FC.CONFIG.apiVersion, CONFIGURATOR.API_VERSION_MIN_SUPPORTED_PID_CONTROLLER_CHANGE));
+                console.log('semver.lt(FC.CONFIG.apiVersion, API_VERSION_1_31)', semver.lt(FC.CONFIG.apiVersion, API_VERSION_1_31));
                 if (semver.gte(FC.CONFIG.apiVersion, CONFIGURATOR.API_VERSION_MIN_SUPPORTED_PID_CONTROLLER_CHANGE) && semver.lt(FC.CONFIG.apiVersion, API_VERSION_1_31)) {
                     FC.PID.controller = pidController_e.val();
                     promise = MSP.promise(MSPCodes.MSP_SET_PID_CONTROLLER, mspHelper.crunch(MSPCodes.MSP_SET_PID_CONTROLLER));
@@ -2534,12 +2597,12 @@ TABS.pid_tuning.initialize = function (callback) {
         self.updating = false;
 
         // enable RC data pulling for rates preview
-        GUI.interval_add('receiver_pull', self.getReceiverData, true);
+        // GUI.interval_add('receiver_pull', self.getReceiverData, true);
 
         // status data pulled via separate timer with static speed
-        GUI.interval_add('status_pull', function status_pull() {
-            MSP.send_message(MSPCodes.MSP_STATUS);
-        }, 250, true);
+        // GUI.interval_add('status_pull', function status_pull() {
+        //     MSP.send_message(MSPCodes.MSP_STATUS);
+        // }, 250, true);
 
         self.analyticsChanges = {};
 

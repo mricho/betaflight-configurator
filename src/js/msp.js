@@ -336,7 +336,7 @@ const MSP = {
         }
 
         const obj = {'code': code, 'requestBuffer': bufferOut, 'callback': callback_msp ? callback_msp : false, 'timer': false, 'callbackOnError': doCallbackOnError};
-
+        console.log('MSP SENDING: ', code);
         let requestExists = false;
         for (const value of MSP.callbacks) {
             if (value.code === code) {
