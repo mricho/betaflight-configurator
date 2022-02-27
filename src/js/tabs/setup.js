@@ -272,7 +272,10 @@ TABS.setup.initialize = function (callback) {
         prepareDisarmFlags();
 
         function get_slow_data() {
-
+            if (CONFIGURATOR.cliActive) { //don't update status if CLI is active, for purpose of CLI command execution
+                console.log('SKIPPING get_slow_data');
+                return;
+            }
             MSP.send_message(MSPCodes.MSP_STATUS, false, false, function() {
 
                 $('#initialSetupArmingAllowed').toggle(FC.CONFIG.armingDisableFlags == 0);
@@ -301,6 +304,10 @@ TABS.setup.initialize = function (callback) {
         }
 
         function get_fast_data() {
+            if (CONFIGURATOR.cliActive) { //don't update status if CLI is active, for purpose of CLI command execution
+                console.log('SKIPPING get_fast_data');
+                return;
+            }
             MSP.send_message(MSPCodes.MSP_ATTITUDE, false, false, function () {
                 roll_e.text(i18n.getMessage('initialSetupAttitude', [FC.SENSOR_DATA.kinematics[0]]));
                 pitch_e.text(i18n.getMessage('initialSetupAttitude', [FC.SENSOR_DATA.kinematics[1]]));
@@ -311,8 +318,8 @@ TABS.setup.initialize = function (callback) {
             });
         }
 
-        // GUI.interval_add('setup_data_pull_fast', get_fast_data, 33, true); // 30 fps
-        // GUI.interval_add('setup_data_pull_slow', get_slow_data, 250, true); // 4 fps
+        GUI.interval_add('setup_data_pull_fast', get_fast_data, 33, true); // 30 fps
+        GUI.interval_add('setup_data_pull_slow', get_slow_data, 250, true); // 4 fps
 
         GUI.content_ready(callback);
     }

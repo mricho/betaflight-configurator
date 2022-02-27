@@ -688,11 +688,13 @@ function have_sensor(sensors_detected, sensor_code) {
 
 function startLiveDataRefreshTimer() {
     // live data refresh
-    //GUI.timeout_add('data_refresh', function () { update_live_status(); }, 100);
+    GUI.timeout_add('data_refresh', function () { update_live_status(); }, 100);
 }
 
 function update_live_status() {
-
+    if (CONFIGURATOR.cliActive) { //don't update status if CLI is active, for purpose of CLI command execution
+        return;
+    }
     const statuswrapper = $('#quad-status_wrapper');
 
     $(".quad-status-contents").css({

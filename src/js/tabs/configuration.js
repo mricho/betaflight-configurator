@@ -639,9 +639,12 @@ TABS.configuration.initialize = function (callback) {
         });
 
         // status data pulled via separate timer with static speed
-        // GUI.interval_add('status_pull', function() {
-        //     MSP.send_message(MSPCodes.MSP_STATUS);
-        // }, 250, true);
+        GUI.interval_add('status_pull', function() {
+            if (CONFIGURATOR.cliActive) { //don't update status if CLI is active, for purpose of CLI command execution
+                return;
+            }
+            MSP.send_message(MSPCodes.MSP_STATUS);
+        }, 250, true);
         GUI.content_ready(callback);
     }
 };
