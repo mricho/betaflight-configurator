@@ -467,7 +467,7 @@ TABS.cli.read = function (readInfo) {
             CONFIGURATOR.cliActive = false;
             CONFIGURATOR.cliValid = false;
             GUI.log(i18n.getMessage('cliReboot'));
-            reinitialiseConnection(self);
+            reinitializeConnection(self);
         }
 
     }

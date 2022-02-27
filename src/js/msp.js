@@ -322,9 +322,10 @@ const MSP = {
             return;
         }
 
-        if (code === undefined) {
+        if (code === undefined || !serial.connectionId) {
             return;
         }
+
         let bufferOut;
         // if (code == 250) {
             // bufferOut = "save_no_reboot";
