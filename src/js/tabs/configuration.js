@@ -4,8 +4,6 @@ TABS.configuration = {
     analyticsChanges: {},
 };
 
-
-
 TABS.configuration.initialize = function (callback) {
     const self = this;
 
@@ -16,46 +14,6 @@ TABS.configuration.initialize = function (callback) {
 
     function load_serial_config() {
         mspHelper.loadSerialConfig(load_config);
-    }
-
-    function sendLine(line, callback) {
-        console.log('hit sendLine', line);
-        send(`${line}\n`, callback);
-    };
-    function send(line, callback) {
-        console.log('hit send', line);
-        const bufferOut = new ArrayBuffer(line.length);
-        const bufView = new Uint8Array(bufferOut);
-
-        for (let cKey = 0; cKey < line.length; cKey++) {
-            bufView[cKey] = line.charCodeAt(cKey);
-        }
-        console.log('Config test serial sending', bufferOut);
-        CONFIGURATOR.cliActive = true;
-        serial.send(bufferOut, callback);
-    };
-
-    function executeCommands(outString) {
-        const outputArray = outString.split("\n");
-        Promise.reduce(outputArray, function(delay, line, index) {
-            return new Promise(function (resolve) {
-                GUI.timeout_add('CLI_send_slowly', function () {
-                    let processingDelay = 15;
-                    line = line.trim();
-                    if (line.toLowerCase().startsWith('profile')) {
-                        processingDelay = self.profileSwitchDelayMs;
-                    }
-                    const isLastCommand = outputArray.length === index + 1;
-                    if (isLastCommand && self.cliBuffer) {
-                        //self.cliBuffer not used
-                        // line = getCliCommand(line, self.cliBuffer);
-                    }
-                    sendLine(line, function () {
-                        resolve(processingDelay);
-                    });
-                }, delay);
-            });
-        }, 0);
     }
 
     function load_config() {
@@ -591,17 +549,6 @@ TABS.configuration.initialize = function (callback) {
             executeCommands('#');
             // executeCommands('#\nset name = test555');
             // executeCommands('save');
-        });
-        $('a.test_cli').on('click', function() {
-            console.log('test cli command pressed');
-            executeCommands('#\nset name = test555');
-            // executeCommands('save');
-        });
-        $('a.test_cli_save').on('click', function() {
-            console.log('test cli save pressed');
-            // executeCommands('#');
-            // executeCommands('set name = test555');
-            executeCommands('save');
         });
         $('a.save').on('click', function() {
             // gather data that doesn't have automatic change event bound

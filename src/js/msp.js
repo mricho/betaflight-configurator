@@ -314,7 +314,6 @@ const MSP = {
         return bufferOut;
     },
     send_message: function (code, data, callback_sent, callback_msp, doCallbackOnError) {
-        // console.log("MSP SEND: ", code, data);
         if (CONFIGURATOR.virtualMode) {
             if (callback_msp) {
                 callback_msp();
@@ -327,9 +326,6 @@ const MSP = {
         }
 
         let bufferOut;
-        // if (code == 250) {
-            // bufferOut = "save_no_reboot";
-        // }
         if (code <= 254) {
             bufferOut = this.encode_message_v1(code, data);
         } else {
