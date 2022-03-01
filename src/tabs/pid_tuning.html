@@ -561,7 +561,26 @@
                                     <span i18n="pidTuningDtermSetpointTransitionWarning"></span>
                                 </td>
                             </tr>
+                            <tr class="feedforwardGroup">
+                                <td><span i18n="Kalman Filter"></span></td>
+                                <td colspan="2">
+                                    <span class="feedforwardOption feedforwardJitterFactor suboption">
+                                        <input type="number" name="imuf_q" step="1" min="0" max="20"/>
+                                        <label>
+                                            <span i18n="IMUF Q"></span>
+                                        </label>
+                                        <div class="helpicon cf_tip" i18n_title="pidTuningFeedforwardJitterHelp"></div>
+                                    </span>
 
+                                    <span class="feedforwardOption feedforwardSmoothFactor suboption">
+                                        <input type="number" name="imuf_w" step="1" min="0" max="75" />
+                                        <label for="feedforwardSmoothFactor">
+                                            <span i18n="IMUF W"></span>
+                                        </label>
+                                        <div class="helpicon cf_tip" i18n_title="pidTuningFeedforwardSmoothnessHelp"></div>
+                                    </span>
+                                </td>
+                            </tr>
                             <tr class="feedforwardGroup">
                                 <td><span i18n="pidTuningFeedforwardGroup"></span></td>
                                 <td colspan="2">
@@ -1750,7 +1769,13 @@
     </div>
     <div class="content_toolbar">
         <div class="btn test_cli_open_btn">
-            <a class="test_cli_open" href="#" i18n="configurationButtonTestOpen"></a>
+            <a class="test_cli_open" href="#" i18n="#"></a>
+        </div>
+        <div class="btn test_cli_fetch_config">
+            <a class="test_cli_fetch_config" href="#" i18n="CONFIG"></a>
+        </div>
+        <div class="btn test_cli_load_q_w">
+            <a class="test_cli_load_q_w" href="#" i18n="LOAD Q/W"></a>
         </div>
         <div class="btn test_cli_btn">
             <a class="test_cli" href="#" i18n="configurationButtonTestCli"></a>

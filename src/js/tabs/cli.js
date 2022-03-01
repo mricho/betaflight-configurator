@@ -405,6 +405,25 @@ TABS.cli.read = function (readInfo) {
         text += String.fromCharCode(data[i]);
     }
     console.log('CLI RECEIVE: ', text);
+    if (CONFIGURATOR.receiveConfigCommand) { // if set, we are capturing all output from CLI
+        //split text by \n
+
+        CONFIGURATOR.configCommandOutput += text.replace('\r','').replace('\n','').replace('#','');
+
+        const lines = text.split("\n");
+        //if last line contains '#'
+
+        if (lines[lines.length - 1].includes("#")) {
+            CONFIGURATOR.receiveConfigCommand = false; //stop reading config command at the end
+            console.log("REACHED END OF CONFIG COMMAND");
+
+            //remove first 6 characters from CONFIGURATOR.configCommandOutput; "config"
+            CONFIGURATOR.configCommandOutput = CONFIGURATOR.configCommandOutput.substring(6);
+            CONFIGURATOR.configJson = JSON.parse(CONFIGURATOR.configCommandOutput);
+        }
+
+    }
+
     for (let i = 0; i < data.length; i++) {
         const currentChar = String.fromCharCode(data[i]);
         const isCRLF = currentChar.charCodeAt() === lineFeedCode || currentChar.charCodeAt() === carriageReturnCode;

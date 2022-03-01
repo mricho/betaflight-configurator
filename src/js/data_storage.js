@@ -29,6 +29,9 @@ const CONFIGURATOR = {
     virtualApiVersion: '0.0.1',
     cliActive: false,
     cliValid: false,
+    cliReceiveConfigCommand: false,  // true if the CLI is waiting for a config command
+    configCommandOutput: '',
+    configJson: {},
     productName: 'Betaflight Configurator',
     cliEngineActive: false,
     cliEngineValid: false,

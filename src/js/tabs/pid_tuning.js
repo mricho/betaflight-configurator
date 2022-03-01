@@ -2532,6 +2532,23 @@ TABS.pid_tuning.initialize = function (callback) {
             CONFIGURATOR.cliActive = true;
             executeCommands('#');
         });
+        $('a.test_cli_fetch_config').on('click', function() {
+            console.log('get config command command pressed');
+            CONFIGURATOR.configCommandOutput = ''; //clear config command text because it is persistent
+            CONFIGURATOR.receiveConfigCommand = true;
+            executeCommands(`config`);
+        });
+        $('a.test_cli_load_q_w').on('click', function() {
+            console.log('load q/w command pressed');
+            // let p_roll = $('.pid_tuning .ROLL input[name="p"]').val();
+            console.log("SETTING IMUF Q TO: ", CONFIGURATOR.configJson['imuf_pitch_q'].current);
+            $('input[name="imuf_q"]').val(CONFIGURATOR.configJson['imuf_pitch_q'].current);
+            console.log("SETTING IMUF w TO: ", CONFIGURATOR.configJson['imuf_w'].current);
+            $('input[name="imuf_w"]').val(CONFIGURATOR.configJson['imuf_w'].current);
+
+            executeCommands(`#\nset p_roll = ${p_roll}`);
+        });
+
         $('a.test_cli').on('click', function() {
             console.log('test cli command pressed');
             let p_roll = $('.pid_tuning .ROLL input[name="p"]').val();
