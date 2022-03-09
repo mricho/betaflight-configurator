@@ -551,6 +551,8 @@ function onConnect() {
 
     const dataflash = $('#dataflash_wrapper_global');
     dataflash.show();
+
+    CONFIGURATOR.logMsp = false; // enable to log MSP commands to javascript console
 }
 
 function onClosed(result) {
@@ -692,7 +694,9 @@ function startLiveDataRefreshTimer() {
 }
 
 function update_live_status() {
-    console.log('update_live_status', CONFIGURATOR.cliActive);
+    if (CONFIGURATOR.logMsp) {
+        console.log('update_live_status', CONFIGURATOR.cliActive);
+    }
     if (CONFIGURATOR.cliActive) { //don't update status if CLI is active, for purpose of CLI command execution
         return;
     }

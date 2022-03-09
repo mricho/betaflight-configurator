@@ -23,9 +23,63 @@ TABS.setup.initialize = function (callback) {
         $('#content').load("./tabs/setup.html", process_html);
     }
 
+    //    load_cli_config().then(() => {
+    //        MSP.send_message(MSPCodes.MSP_ACC_TRIM, false, false, load_status);
+    //     });
+    //load_cli_config();
     MSP.send_message(MSPCodes.MSP_ACC_TRIM, false, false, load_status);
 
+
+    //CLI MSP commands
+    function sendLine(line, callback) {
+        console.log('hit sendLine', line);
+        send(`${line}\n`, callback);
+    };
+    function send(line, callback) {
+        console.log('hit send', line);
+        const bufferOut = new ArrayBuffer(line.length);
+        const bufView = new Uint8Array(bufferOut);
+
+        for (let cKey = 0; cKey < line.length; cKey++) {
+            bufView[cKey] = line.charCodeAt(cKey);
+        }
+        console.log('Config test serial sending', bufferOut);
+        serial.send(bufferOut, callback);
+    };
+    function executeCommands(outString) {
+        const outputArray = outString.split("\n");
+        Promise.reduce(outputArray, function(delay, line, index) {
+            return new Promise(function (resolve) {
+                GUI.timeout_add('CLI_send_slowly', function () {
+                    let processingDelay = 15;
+                    line = line.trim();
+                    if (line.toLowerCase().startsWith('profile')) {
+                        processingDelay = self.profileSwitchDelayMs;
+                    }
+                    const isLastCommand = outputArray.length === index + 1;
+                    if (isLastCommand && self.cliBuffer) {
+                        //self.cliBuffer not used
+                        // line = getCliCommand(line, self.cliBuffer);
+                    }
+                    sendLine(line, function () {
+                        resolve(processingDelay);
+                    });
+                }, delay);
+            });
+        }, 0);
+        // return true;
+    }
+
+    function load_cli_config() {
+        executeCommands('#');
+        CONFIGURATOR.configCommandOutput = ''; //clear config command text because it is persistent
+        CONFIGURATOR.receiveConfigCommand = true;
+        executeCommands(`config`);
+        executeCommands('exit_no_reboot');
+    }
+
     function process_html() {
+
         // translate to user-selected language
         i18n.localizePage();
 
