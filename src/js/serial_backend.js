@@ -692,6 +692,7 @@ function startLiveDataRefreshTimer() {
 }
 
 function update_live_status() {
+    console.log('update_live_status', CONFIGURATOR.cliActive);
     if (CONFIGURATOR.cliActive) { //don't update status if CLI is active, for purpose of CLI command execution
         return;
     }

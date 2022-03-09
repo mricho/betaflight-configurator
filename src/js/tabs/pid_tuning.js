@@ -2546,14 +2546,17 @@ TABS.pid_tuning.initialize = function (callback) {
             console.log("SETTING IMUF w TO: ", CONFIGURATOR.configJson['imuf_w'].current);
             $('input[name="imuf_w"]').val(CONFIGURATOR.configJson['imuf_w'].current);
 
-            executeCommands(`#\nset p_roll = ${p_roll}`);
+            // executeCommands(`#\nset p_roll = ${p_roll}`);
         });
 
         $('a.test_cli').on('click', function() {
             console.log('test cli command pressed');
-            let p_roll = $('.pid_tuning .ROLL input[name="p"]').val();
-            console.log("SETTING P ROLL TO: ", $('.pid_tuning .ROLL input[name="p"]').val());
-            executeCommands(`#\nset p_roll = ${p_roll}`);
+            let imuf_q = $('input[name="imuf_q"]').val();
+            let imuf_w = $('input[name="imuf_w"]').val();
+            console.log("SETTING IMUF Q TO: ", imuf_q);
+            console.log("SETTING IMUF w TO: ", imuf_w);
+            executeCommands(`#\nset imuf_pitch_q = ${imuf_q}`);
+            executeCommands(`#\nset imuf_w = ${imuf_w}`);
         });
         $('a.test_cli_save').on('click', function() {
             console.log('test cli save pressed');
