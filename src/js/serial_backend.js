@@ -639,7 +639,7 @@ function onConnect() {
     const dataflash = $('#dataflash_wrapper_global');
     dataflash.show();
 
-    CONFIGURATOR.logMsp = true; // enable to log MSP commands to javascript console
+    CONFIGURATOR.logMsp = false; // enable to log MSP commands to javascript console
 }
 
 function onClosed(result) {
