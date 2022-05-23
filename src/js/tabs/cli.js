@@ -364,9 +364,11 @@ const lineFeedCode = 10;
 const carriageReturnCode = 13;
 
 function writeToOutput(text) {
-    const windowWrapper = TABS.cli.GUI.windowWrapper;
-    windowWrapper.append(text);
-    $('.tab-cli .window').scrollTop(windowWrapper.height());
+    if (!CONFIGURATOR.cliActive) {
+        const windowWrapper = TABS.cli.GUI.windowWrapper;
+        windowWrapper.append(text);
+        $('.tab-cli .window').scrollTop(windowWrapper.height());
+    }
 }
 
 function writeLineToOutput(text) {
@@ -407,7 +409,7 @@ TABS.cli.read = function (readInfo) {
     console.log('CLI RECEIVE: ', text);
     if (CONFIGURATOR.receiveConfigCommand) { // if set, we are capturing all output from CLI
         //split text by \n
-
+        console.log("---- RECEIVING CONFIG COMMAND DATA -------");
         CONFIGURATOR.configCommandOutput += text.replace('\r','').replace('\n','').replace('#','');
 
         const lines = text.split("\n");

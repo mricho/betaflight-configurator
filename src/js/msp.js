@@ -346,7 +346,7 @@ const MSP = {
             }
         }
 
-        if (!requestExists) {
+        if (!requestExists && !CONFIGURATOR.cliActive) {
             obj.timer = setInterval(function () {
                 console.warn(`MSP: data request timed-out: ${code} ID: ${serial.connectionId} TAB: ${GUI.active_tab}`);
 

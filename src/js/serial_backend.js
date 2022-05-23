@@ -214,7 +214,68 @@ function setConnectionTimeout() {
     }, 10000);
 }
 
-function onOpen(openInfo) {
+//CLI MSP commands
+function sendLine(line, callback) {
+    console.log('hit sendLine', line);
+    send(`${line}\n`, callback);
+};
+function send(line, callback) {
+    console.log('hit send', line);
+    const bufferOut = new ArrayBuffer(line.length);
+    const bufView = new Uint8Array(bufferOut);
+
+    for (let cKey = 0; cKey < line.length; cKey++) {
+        bufView[cKey] = line.charCodeAt(cKey);
+    }
+    console.log('Config test serial sending', bufferOut);
+    serial.send(bufferOut, callback);
+};
+function executeCommands(outString) {
+    const outputArray = outString.split("\n");
+    Promise.reduce(outputArray, function(delay, line, index) {
+        return new Promise(function (resolve) {
+            GUI.timeout_add('CLI_send_slowly', function () {
+                let processingDelay = 100;
+                line = line.trim();
+                if (line.toLowerCase().startsWith('profile')) {
+                    processingDelay = self.profileSwitchDelayMs;
+                }
+                const isLastCommand = outputArray.length === index + 1;
+                if (isLastCommand && self.cliBuffer) {
+                    //self.cliBuffer not used
+                    // line = getCliCommand(line, self.cliBuffer);
+                }
+                sendLine(line, function () {
+                    resolve(processingDelay);
+                });
+            }, delay);
+        });
+    }, 0);
+    // return true;
+}
+// a promise
+// let load_cli_config = new Promise(function (resolve, reject) {
+//     console.log("---PROMISE STARTED---");
+//     CONFIGURATOR.cliActive = true;
+//     executeCommands('#');
+//     CONFIGURATOR.configCommandOutput = ''; //clear config command text because it is persistent
+//     CONFIGURATOR.receiveConfigCommand = true;
+//     executeCommands(`config`);
+//     executeCommands('exit_no_reboot');
+//     resolve('Promise resolved');
+// });
+async function load_cli_config() {
+    CONFIGURATOR.cliActive = true;
+    CONFIGURATOR.configCommandOutput = ''; //clear config command text because it is persistent
+    executeCommands('#');
+    // executeCommands('#\n#\nconfig');
+    // CONFIGURATOR.receiveConfigCommand = true;
+    executeCommands('config');
+    // executeCommands('exit_no_reboot');
+    // CONFIGURATOR.cliActive = false;
+}
+
+async function onOpen(openInfo) {
     if (openInfo) {
         CONFIGURATOR.virtualMode = false;
 
@@ -238,66 +299,74 @@ function onOpen(openInfo) {
             }
         });
 
-        serial.onReceive.addListener(read_serial);
-        setConnectionTimeout();
-        FC.resetState();
-        mspHelper = new MspHelper();
-        MSP.listen(mspHelper.process_data.bind(mspHelper));
+
+
         console.log(`Requesting configuration data`);
+        console.log('-----CLI READ START-------');
 
-        MSP.send_message(MSPCodes.MSP_API_VERSION, false, false, function () {
-            analytics.setFlightControllerData(analytics.DATA.API_VERSION, FC.CONFIG.apiVersion);
+        await load_cli_config().then(function (result) {
+            serial.onReceive.addListener(read_serial);
+            setConnectionTimeout();
+            FC.resetState();
+            mspHelper = new MspHelper();
+            MSP.listen(mspHelper.process_data.bind(mspHelper));
+            console.log('-----CLI READ END-------');
+            console.log('its supposed to wait until the CLI receive is over.');
 
-            GUI.log(i18n.getMessage('apiVersionReceived', [FC.CONFIG.apiVersion]));
+            MSP.send_message(MSPCodes.MSP_API_VERSION, false, false, function () {
+                analytics.setFlightControllerData(analytics.DATA.API_VERSION, FC.CONFIG.apiVersion);
 
-            if (semver.gte(FC.CONFIG.apiVersion, CONFIGURATOR.API_VERSION_ACCEPTED)) {
+                GUI.log(i18n.getMessage('apiVersionReceived', [FC.CONFIG.apiVersion]));
 
-                MSP.send_message(MSPCodes.MSP_FC_VARIANT, false, false, function () {
-                    analytics.setFlightControllerData(analytics.DATA.FIRMWARE_TYPE, FC.CONFIG.flightControllerIdentifier);
-                    if (FC.CONFIG.flightControllerIdentifier === 'BTFL') {
-                        MSP.send_message(MSPCodes.MSP_FC_VERSION, false, false, function () {
-                            analytics.setFlightControllerData(analytics.DATA.FIRMWARE_VERSION, FC.CONFIG.flightControllerVersion);
+                if (semver.gte(FC.CONFIG.apiVersion, CONFIGURATOR.API_VERSION_ACCEPTED)) {
 
-                            GUI.log(i18n.getMessage('fcInfoReceived', [FC.CONFIG.flightControllerIdentifier, FC.CONFIG.flightControllerVersion]));
+                    MSP.send_message(MSPCodes.MSP_FC_VARIANT, false, false, function () {
+                        analytics.setFlightControllerData(analytics.DATA.FIRMWARE_TYPE, FC.CONFIG.flightControllerIdentifier);
+                        if (FC.CONFIG.flightControllerIdentifier === 'BTFL') {
+                            MSP.send_message(MSPCodes.MSP_FC_VERSION, false, false, function () {
+                                analytics.setFlightControllerData(analytics.DATA.FIRMWARE_VERSION, FC.CONFIG.flightControllerVersion);
 
-                            MSP.send_message(MSPCodes.MSP_BUILD_INFO, false, false, function () {
+                                GUI.log(i18n.getMessage('fcInfoReceived', [FC.CONFIG.flightControllerIdentifier, FC.CONFIG.flightControllerVersion]));
 
-                                GUI.log(i18n.getMessage('buildInfoReceived', [FC.CONFIG.buildInfo]));
+                                MSP.send_message(MSPCodes.MSP_BUILD_INFO, false, false, function () {
 
-                                MSP.send_message(MSPCodes.MSP_BOARD_INFO, false, false, processBoardInfo);
+                                    GUI.log(i18n.getMessage('buildInfoReceived', [FC.CONFIG.buildInfo]));
+
+                                    MSP.send_message(MSPCodes.MSP_BOARD_INFO, false, false, processBoardInfo);
+                                });
                             });
-                        });
-                    } else {
-                        analytics.sendEvent(analytics.EVENT_CATEGORIES.FLIGHT_CONTROLLER, 'ConnectionRefusedFirmwareType', FC.CONFIG.flightControllerIdentifier);
+                        } else {
+                            analytics.sendEvent(analytics.EVENT_CATEGORIES.FLIGHT_CONTROLLER, 'ConnectionRefusedFirmwareType', FC.CONFIG.flightControllerIdentifier);
 
-                        const dialog = $('.dialogConnectWarning')[0];
+                            const dialog = $('.dialogConnectWarning')[0];
 
-                        $('.dialogConnectWarning-content').html(i18n.getMessage('firmwareTypeNotSupported'));
+                            $('.dialogConnectWarning-content').html(i18n.getMessage('firmwareTypeNotSupported'));
 
-                        $('.dialogConnectWarning-closebtn').click(function() {
-                            dialog.close();
-                        });
+                            $('.dialogConnectWarning-closebtn').click(function() {
+                                dialog.close();
+                            });
 
-                        dialog.showModal();
+                            dialog.showModal();
 
-                        connectCli();
-                    }
-                });
-            } else {
-                analytics.sendEvent(analytics.EVENT_CATEGORIES.FLIGHT_CONTROLLER, 'ConnectionRefusedFirmwareVersion', FC.CONFIG.apiVersion);
+                            connectCli();
+                        }
+                    });
+                } else {
+                    analytics.sendEvent(analytics.EVENT_CATEGORIES.FLIGHT_CONTROLLER, 'ConnectionRefusedFirmwareVersion', FC.CONFIG.apiVersion);
 
-                const dialog = $('.dialogConnectWarning')[0];
+                    const dialog = $('.dialogConnectWarning')[0];
 
-                $('.dialogConnectWarning-content').html(i18n.getMessage('firmwareVersionNotSupported', [CONFIGURATOR.API_VERSION_ACCEPTED]));
+                    $('.dialogConnectWarning-content').html(i18n.getMessage('firmwareVersionNotSupported', [CONFIGURATOR.API_VERSION_ACCEPTED]));
 
-                $('.dialogConnectWarning-closebtn').click(function() {
-                    dialog.close();
-                });
+                    $('.dialogConnectWarning-closebtn').click(function() {
+                        dialog.close();
+                    });
 
-                dialog.showModal();
+                    dialog.showModal();
 
-                connectCli();
-            }
+                    connectCli();
+                }
+            });
         });
     } else {
         analytics.sendEvent(analytics.EVENT_CATEGORIES.FLIGHT_CONTROLLER, 'SerialPortFailed');
@@ -552,7 +621,7 @@ function onConnect() {
     const dataflash = $('#dataflash_wrapper_global');
     dataflash.show();
 
-    CONFIGURATOR.logMsp = false; // enable to log MSP commands to javascript console
+    CONFIGURATOR.logMsp = true; // enable to log MSP commands to javascript console
 }
 
 function onClosed(result) {
