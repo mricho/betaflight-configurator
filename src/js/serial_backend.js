@@ -275,20 +275,20 @@ async function load_cli_config() {
         // executeCommands('config');
 
 
-        // //set a timer for 100ms
-        // let timer = setInterval(function () {
-        //     console.log("---PROMISE TIMER running. receiving: ", CONFIGURATOR.receiveConfigCommand);
+        // 500ms timer to poll whether we are done with the config command, may be too quick, because its not true right away.
+        let timer = setInterval(function () {
+            console.log("---PROMISE TIMER running. receiving: ", CONFIGURATOR.receiveConfigCommand);
 
-        //     if (!CONFIGURATOR.receiveConfigCommand) { // means that we have finished receiving config command
-        //         clearInterval(timer);
-        //         resolve('Promise resolved');
-        //     }
-        // }, 100);
+            if (!CONFIGURATOR.receiveConfigCommand) { // means that we have finished receiving config command
+                clearInterval(timer);
+                resolve('Promise resolved');
+            }
+        }, 500);
 
-        let timer = setTimeout(function() {
-            // executeCommands('exit_no_reboot');
-            resolve('Promise resolved');
-        }, 10000);
+        // 10 second timer version
+        // let timer = setTimeout(function() {
+        //     resolve('Promise resolved');
+        // }, 10000);
     });
 };
 
