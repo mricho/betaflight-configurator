@@ -40,6 +40,9 @@ TABS.pid_tuning.initialize = function (callback) {
         GUI.active_tab = 'pid_tuning';
         self.activeSubtab = 'pid';
     }
+
+
+    //LEGACY EMU CLI FUNCTIONS FOR OLD TEST BUTTONS
     function sendLine(line, callback) {
         console.log('hit sendLine', line);
         send(`${line}\n`, callback);
@@ -78,6 +81,8 @@ TABS.pid_tuning.initialize = function (callback) {
             });
         }, 0);
     }
+    // END LEGACY JANK
+
     // Update filtering and pid defaults based on API version
     const FILTER_DEFAULT = FC.getFilterDefaults();
     const PID_DEFAULT = FC.getPidDefaults();
@@ -2630,6 +2635,12 @@ TABS.pid_tuning.initialize = function (callback) {
 
         GUI.content_ready(callback);
         TABS.pid_tuning.isHtmlProcessing = false;
+
+        //UPDATE EMU FIELDS FROM CLI CONFIG
+        console.log("SETTING IMUF Q TO: ", CONFIGURATOR.configJson['imuf_pitch_q'].current);
+        $('input[name="imuf_q"]').val(CONFIGURATOR.configJson['imuf_pitch_q'].current);
+        console.log("SETTING IMUF w TO: ", CONFIGURATOR.configJson['imuf_w'].current);
+        $('input[name="imuf_w"]').val(CONFIGURATOR.configJson['imuf_w'].current);
     }
 };
 
