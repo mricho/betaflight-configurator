@@ -220,7 +220,7 @@ function sendLine(line, callback) {
     send(`${line}\n`, callback);
 };
 function send(line, callback) {
-    console.log('hit send', line);
+    console.log('hit send', line, 'iscliActive: ', CONFIGURATOR.cliActive);
     const bufferOut = new ArrayBuffer(line.length);
     const bufView = new Uint8Array(bufferOut);
 
@@ -264,16 +264,33 @@ function executeCommands(outString) {
 //     executeCommands('exit_no_reboot');
 //     resolve('Promise resolved');
 // });
+// async function load_cli_config() {
 async function load_cli_config() {
-    CONFIGURATOR.cliActive = true;
-    CONFIGURATOR.configCommandOutput = ''; //clear config command text because it is persistent
-    executeCommands('#');
-    // executeCommands('#\n#\nconfig');
-    // CONFIGURATOR.receiveConfigCommand = true;
-    executeCommands('config');
-    // executeCommands('exit_no_reboot');
-    // CONFIGURATOR.cliActive = false;
-}
+    return new Promise(function (resolve, reject) {
+        CONFIGURATOR.cliActive = true;
+        CONFIGURATOR.configCommandOutput = ''; //clear config command text because it is persistent
+        // executeCommands('#');
+        executeCommands('#\n#\nconfig\nexit_no_reboot');
+        // CONFIGURATOR.receiveConfigCommand = true;
+        // executeCommands('config');
+
+
+        // //set a timer for 100ms
+        // let timer = setInterval(function () {
+        //     console.log("---PROMISE TIMER running. receiving: ", CONFIGURATOR.receiveConfigCommand);
+
+        //     if (!CONFIGURATOR.receiveConfigCommand) { // means that we have finished receiving config command
+        //         clearInterval(timer);
+        //         resolve('Promise resolved');
+        //     }
+        // }, 100);
+
+        let timer = setTimeout(function() {
+            // executeCommands('exit_no_reboot');
+            resolve('Promise resolved');
+        }, 10000);
+    });
+};
 
 async function onOpen(openInfo) {
     if (openInfo) {
@@ -303,16 +320,17 @@ async function onOpen(openInfo) {
 
         console.log(`Requesting configuration data`);
         console.log('-----CLI READ START-------');
+        serial.onReceive.addListener(read_serial); // this must be above load_cli_config() call, otherwise it will not work
 
+        CONFIGURATOR.cliActive = true;
         await load_cli_config().then(function (result) {
-            serial.onReceive.addListener(read_serial);
+            console.log('-----CLI READ END-------');
+            console.log('its supposed to wait until the CLI receive is over.');
+            CONFIGURATOR.cliActive = false;
             setConnectionTimeout();
             FC.resetState();
             mspHelper = new MspHelper();
             MSP.listen(mspHelper.process_data.bind(mspHelper));
-            console.log('-----CLI READ END-------');
-            console.log('its supposed to wait until the CLI receive is over.');
-
             MSP.send_message(MSPCodes.MSP_API_VERSION, false, false, function () {
                 analytics.setFlightControllerData(analytics.DATA.API_VERSION, FC.CONFIG.apiVersion);
 
