@@ -406,14 +406,14 @@ TABS.cli.read = function (readInfo) {
     for (let i = 0; i < data.length; i++) {
         text += String.fromCharCode(data[i]);
     }
-    console.log('CLI RECEIVE: ', text);
+    // console.log('CLI RECEIVE: ', text);
     if (!CONFIGURATOR.receiveConfigCommand && text.includes("\"gyro_hardware_lpf\"")) { // detect first output of config command which will contain a "\r\n(space) config{" to start JSON
         CONFIGURATOR.receiveConfigCommand = true; // start capturing config command
         // text = text.split("\r\n ")[1]; // remove anything before "config{"
     }
     if (CONFIGURATOR.receiveConfigCommand) { // if set, we are capturing all output from CLI
         //split text by \n
-        console.log("---- RECEIVING CONFIG COMMAND DATA -------");
+        // console.log("---- RECEIVING CONFIG COMMAND DATA -------");
         CONFIGURATOR.configCommandOutput += text.replace('\r\n', '').replace('\r','').replace('\n','').replace('#','');
 
         const lines = text.split("\n");
