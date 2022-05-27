@@ -406,10 +406,9 @@ TABS.cli.read = function (readInfo) {
     for (let i = 0; i < data.length; i++) {
         text += String.fromCharCode(data[i]);
     }
-    // console.log('CLI RECEIVE: ', text);
-    if (!CONFIGURATOR.receiveConfigCommand && text.includes("\"gyro_hardware_lpf\"")) { // detect first output of config command which will contain a "\r\n(space) config{" to start JSON
+    console.log('CLI RECEIVE: ', text);
+    if (!CONFIGURATOR.receiveConfigCommand && text.includes("----- CONFIG START -----")) { // detect first output of config command which is "----- CONFIG START -----"
         CONFIGURATOR.receiveConfigCommand = true; // start capturing config command
-        // text = text.split("\r\n ")[1]; // remove anything before "config{"
     }
     if (CONFIGURATOR.receiveConfigCommand) { // if set, we are capturing all output from CLI
         //split text by \n
@@ -420,9 +419,13 @@ TABS.cli.read = function (readInfo) {
         //if last line contains '#'
 
         // if (lines[lines.length - 1].includes("#")) {
-        if (text.includes("exit_no_reboot")) { // the last line contains \r\n(space)
+        if (text.includes("----- CONFIG END -----")) { // the last line contains "----- CONFIG END -----"
             CONFIGURATOR.receiveConfigCommand = false; //stop reading config command at the end
             console.log("REACHED END OF CONFIG COMMAND");
+
+            // remove start of config command text
+            CONFIGURATOR.configCommandOutput = CONFIGURATOR.configCommandOutput.replace("----- CONFIG START -----", "");
+
             //remove first 6 characters from CONFIGURATOR.configCommandOutput; "config"
             CONFIGURATOR.configCommandOutput = CONFIGURATOR.configCommandOutput.substring(6);
 
