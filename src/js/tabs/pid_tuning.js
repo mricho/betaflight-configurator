@@ -2637,8 +2637,8 @@ TABS.pid_tuning.initialize = function (callback) {
         TABS.pid_tuning.isHtmlProcessing = false;
 
         //UPDATE EMU FIELDS FROM CLI CONFIG
-        console.log("SETTING IMUF Q TO: ", CONFIGURATOR.configJson['imuf_pitch_q'].current);
-        $('input[name="imuf_q"]').val(CONFIGURATOR.configJson['imuf_pitch_q'].current);
+        console.log("SETTING IMUF Q TO: ", CONFIGURATOR.configJson['imuf_q'].current);
+        $('input[name="imuf_q"]').val(CONFIGURATOR.configJson['imuf_q'].current);
         console.log("SETTING IMUF w TO: ", CONFIGURATOR.configJson['imuf_w'].current);
         $('input[name="imuf_w"]').val(CONFIGURATOR.configJson['imuf_w'].current);
     }
