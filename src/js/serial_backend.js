@@ -275,11 +275,12 @@ async function load_cli_config() {
         // executeCommands('config');
 
 
-        // 500ms timer to poll whether we are done with the config command, may be too quick, because its not true right away.
+        // 500 timer to poll whether we are done with the config command, may be too quick, because its not true right away.
         let timer = setInterval(function () {
             console.log("---PROMISE TIMER running. receiving: ", CONFIGURATOR.receiveConfigCommand);
 
-            if (!CONFIGURATOR.receiveConfigCommand) { // means that we have finished receiving config command
+            // if (CONFIGURATOR.receiveConfigCommand !== undefined && CONFIGURATOR.receiveConfigCommand == false) { // means that we have finished receiving config command
+            if (!CONFIGURATOR.receiveConfigCommand) {
                 clearInterval(timer);
                 resolve('Promise resolved');
             }
@@ -639,7 +640,7 @@ function onConnect() {
     const dataflash = $('#dataflash_wrapper_global');
     dataflash.show();
 
-    CONFIGURATOR.logMsp = false; // enable to log MSP commands to javascript console
+    CONFIGURATOR.logMsp = true; // enable to log MSP commands to javascript console
 }
 
 function onClosed(result) {

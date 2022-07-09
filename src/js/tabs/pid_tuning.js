@@ -2560,7 +2560,7 @@ TABS.pid_tuning.initialize = function (callback) {
             let imuf_w = $('input[name="imuf_w"]').val();
             console.log("SETTING IMUF Q TO: ", imuf_q);
             console.log("SETTING IMUF w TO: ", imuf_w);
-            executeCommands(`#\nset imuf_pitch_q = ${imuf_q}`);
+            executeCommands(`#\nset imuf_q = ${imuf_q}`);
             executeCommands(`#\nset imuf_w = ${imuf_w}`);
         });
         $('a.test_cli_save').on('click', function() {
@@ -2611,8 +2611,28 @@ TABS.pid_tuning.initialize = function (callback) {
                 GUI.log(i18n.getMessage('pidTuningEepromSaved'));
 
                 self.refresh();
-            });
+            })
+            //start cli stuff
+            .then(() => {
+                CONFIGURATOR.cliActive = true;
+            })
+            .then(() => {
+                executeCommands('#');
+                let imuf_q = $('input[name="imuf_q"]').val();
+                let imuf_w = $('input[name="imuf_w"]').val();
+                console.log("SETTING IMUF Q TO: ", imuf_q);
+                console.log("SETTING IMUF w TO: ", imuf_w);
+                executeCommands(`#\nset imuf_q = ${imuf_q}`);
+                executeCommands(`#\nset imuf_w = ${imuf_w}`);
+                executeCommands('save_no_reboot');
+                executeCommands('exit_no_reboot');
 
+            })
+            .then(() => {
+                // return new Promise(resolve => setTimeout(resolve, 1000));
+                CONFIGURATOR.cliActive = false; // return to MSP mode
+            });
+            // end cli stuff
             analytics.sendSaveAndChangeEvents(analytics.EVENT_CATEGORIES.FLIGHT_CONTROLLER, self.analyticsChanges, 'pid_tuning');
             self.analyticsChanges = {};
         });
@@ -2637,9 +2657,9 @@ TABS.pid_tuning.initialize = function (callback) {
         TABS.pid_tuning.isHtmlProcessing = false;
 
         //UPDATE EMU FIELDS FROM CLI CONFIG
-        console.log("SETTING IMUF Q TO: ", CONFIGURATOR.configJson['imuf_q'].current);
+        console.log("GETTING IMUF Q AS: ", CONFIGURATOR.configJson['imuf_q'].current);
         $('input[name="imuf_q"]').val(CONFIGURATOR.configJson['imuf_q'].current);
-        console.log("SETTING IMUF w TO: ", CONFIGURATOR.configJson['imuf_w'].current);
+        console.log("GETTING IMUF w AS: ", CONFIGURATOR.configJson['imuf_w'].current);
         $('input[name="imuf_w"]').val(CONFIGURATOR.configJson['imuf_w'].current);
     }
 };
